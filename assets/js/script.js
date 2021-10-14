@@ -49,34 +49,54 @@ form.addEventListener("submit", e => {
   }
 
   //ajax here
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${inputVal}&appid=${apiKey}`;
+  const url = 'http://api.openweathermap.org/geo/1.0/direct?' +
+  'q=' + inputVal +
+  '&appid=a3524ecce44e097cdbac57df6041ae72';
 
   fetch(url)
     .then(response => response.json())
     .then(data => {
-      const { main, name, sys, weather } = data;
-      const icon = `https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${
-        weather[0]["icon"]
-      }.svg`;
+      console.log(data);
+      const lat = data[0].lat
+      const lon = data[0].lon
+      return fetch(
+        'https://api.openweathermap.org/data/2.5/onecall?' +
+            '&lat=' + lat +
+            '&lon=' + lon +
+            '&exclude=minutely,hourly,alerts' +
+            '&units=imperial' +
+            '&appid=a3524ecce44e097cdbac57df6041ae72'
 
-      const li = document.createElement("li");
-      li.classList.add("city");
-      const markup = `
-        <h2 class="city-name" data-name="${name},${sys.country}">
-          <span>${name}</span>
-          <sup>${sys.country}</sup>
-        </h2>
-        <div class="city-temp">${Math.round(main.temp)}<sup>°C</sup></div>
-        <figure>
-          <img class="city-icon" src="${icon}" alt="${
-        weather[0]["description"]
-      }">
-          <figcaption>${weather[0]["description"]}</figcaption>
-        </figure>
-      `;
-      li.innerHTML = markup;
-      list.appendChild(li);
-    })
+    )}).then(function(response) {
+        return response.json();
+      })
+  
+      .then(data => {
+        console.log(data);
+        console.log(data.current.weather[0].icon);
+        const icon = `https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${
+        data.current.weather[0].icon 
+        }.svg`;
+  
+        const li = document.createElement("li");
+        li.classList.add("city");
+        const markup = `
+          <h2 class="city-name" data-name="${name}">
+            <span>${name}</span>
+            
+          </h2>
+          <div class="city-temp">${Math.round(data.current.temp)}<sup>°F</sup></div>
+          <figure>
+            <img class="city-icon" src="${icon}">
+          </figure>
+          <p>Wind: ${data.current.wind_speed}</p>
+          <p>Humidity: ${data.current.humidity}</p>
+          <p>UV Index: ${data.current.uvi}</p>
+        `;
+        li.innerHTML = markup;
+        list.appendChild(li);
+      })
+    
     .catch(() => {
       msg.textContent = "Please search for a valid city 😩";
     });
@@ -85,3 +105,4 @@ form.addEventListener("submit", e => {
   form.reset();
   input.focus();
 });
+
